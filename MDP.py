@@ -45,8 +45,42 @@ class MDP:
         V = np.zeros(self.nStates)
         iterId = 0
         epsilon = 0
-        
-        return [V,iterId,epsilon]
+
+        print(self.T)
+        print(self.R)
+
+        for current_state in range(0, self.nStates):
+            print('State {}'.format(current_state))
+
+            # Computing new value function
+            # Still don't understand why the shape of R is weird?
+            # Whatever the action, the reward for the state is the same...
+            print('Reward on current state: {}'.format(self.R[0, current_state]))
+
+            # Identify states and actions couples
+            print('What is the probability of switching to the other state')
+
+            # Compute max reward for next state
+            max_accumulator = 0
+            for action in range(0, self.nActions):
+                print('Action {}'.format(action))
+                accumulator = 0
+                for target_state in range(0, self.nStates):
+                    #print('Probability: {}'.format(self.T[action, current_state, target_state]))
+                    #print('Reward target state {}'.format(self.R[action, target_state]))
+                    accumulator += (self.T[action, current_state, target_state] * self.R[action, target_state])
+                print('accumulator: {}'.format(accumulator))
+                max_accumulator = max(accumulator, 0)
+
+            print('Max accumulator for this state: {}'.format(max_accumulator))
+
+            # Compute new reward for next state
+            new_reward = self.R[0, current_state] + (self.discount * max_accumulator)
+
+            print('New utility: {}\n'.format(new_reward))
+
+        return [V, iterId, epsilon]
+
 
     def extractPolicy(self,V):
         '''Procedure to extract a policy from a value function
