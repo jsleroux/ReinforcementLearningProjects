@@ -46,39 +46,44 @@ class MDP:
         iterId = 0
         epsilon = 0
 
-        print(self.T)
-        print(self.R)
+        while(True):
+            Vbackup = V.copy()
+            delta = 0
 
-        for current_state in range(0, self.nStates):
-            print('State {}'.format(current_state))
+            for current_state in range(0, self.nStates):
+                print('State {}'.format(current_state))
 
-            # Computing new value function
-            # Still don't understand why the shape of R is weird?
-            # Whatever the action, the reward for the state is the same...
-            print('Reward on current state: {}'.format(self.R[0, current_state]))
+                # Computing new value function
+                # Still don't understand why the shape of R is weird?
+                # Whatever the action, the reward for the state is the same...
+                print('Reward on current state: {}'.format(self.R[0, current_state]))
 
-            # Identify states and actions couples
-            print('What is the probability of switching to the other state')
+                # Compute max reward for next state
+                max_accumulator = 0
+                for action in range(0, self.nActions):
+                    #print('Action {}'.format(action))
+                    accumulator = 0
+                    for target_state in range(0, self.nStates):
+                        accumulator += (self.T[action, current_state, target_state] * self.R[action, target_state])
+                    max_accumulator = max(accumulator, 0)
 
-            # Compute max reward for next state
-            max_accumulator = 0
-            for action in range(0, self.nActions):
-                print('Action {}'.format(action))
-                accumulator = 0
-                for target_state in range(0, self.nStates):
-                    #print('Probability: {}'.format(self.T[action, current_state, target_state]))
-                    #print('Reward target state {}'.format(self.R[action, target_state]))
-                    accumulator += (self.T[action, current_state, target_state] * self.R[action, target_state])
-                print('accumulator: {}'.format(accumulator))
-                max_accumulator = max(accumulator, 0)
+                #print('Max accumulator for this state: {}'.format(max_accumulator))
 
-            print('Max accumulator for this state: {}'.format(max_accumulator))
+                # Compute new reward for next state
+                new_reward = self.R[0, current_state] + (self.discount * max_accumulator)
+                V[current_state] = new_reward
 
-            # Compute new reward for next state
-            new_reward = self.R[0, current_state] + (self.discount * max_accumulator)
+                print(V)
+                print(Vbackup)
+                difference = np.abs(V[current_state]-Vbackup[current_state])
+                if difference > delta:
+                    delta = difference
+                print('Delta: {}'.format(delta))
 
-            print('New utility: {}\n'.format(new_reward))
-
+            print(tolerance*(1 - self.discount)/self.discount)
+            if delta < tolerance*(1 - self.discount)/self.discount:
+                break
+            #break
         return [V, iterId, epsilon]
 
 
