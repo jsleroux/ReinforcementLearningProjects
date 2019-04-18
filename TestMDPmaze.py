@@ -300,7 +300,9 @@ discount = 0.95
 mdp = MDP.MDP(T,R,discount)
 
 '''Test each procedure'''
-[V,nIterations,epsilon] = mdp.valueIteration(initialV=np.zeros(mdp.nStates),tolerance=0.01)
-[policy,V,nIterations] = mdp.policyIteration(np.zeros(mdp.nStates,dtype=int))
-[policy,V,nIterations,epsilon] = mdp.modifiedPolicyIteration(np.zeros(mdp.nStates,dtype=int),np.zeros(mdp.nStates),tolerance=0.01)
+[V,nIterations,epsilon] = mdp.valueIteration(initialV=np.zeros(mdp.nStates),nIterations=10, tolerance=0.01)
+print([V,nIterations,epsilon])
+
+#[policy,V,nIterations] = mdp.policyIteration(np.zeros(mdp.nStates,dtype=int))
+#[policy,V,nIterations,epsilon] = mdp.modifiedPolicyIteration(np.zeros(mdp.nStates,dtype=int),np.zeros(mdp.nStates),tolerance=0.01)
 

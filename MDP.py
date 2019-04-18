@@ -42,49 +42,41 @@ class MDP:
         
         # temporary values to ensure that the code compiles until this
         # function is coded
-        V = np.zeros(self.nStates)
+        V = initialV
         iterId = 0
-        epsilon = 0
+        #epsilon = 0
 
-        while(True):
+        print([V, iterId, tolerance])
+
+        while True:
             Vbackup = V.copy()
+            iterId+=1
             delta = 0
 
             for current_state in range(0, self.nStates):
-                print('State {}'.format(current_state))
-
-                # Computing new value function
-                # Still don't understand why the shape of R is weird?
-                # Whatever the action, the reward for the state is the same...
-                print('Reward on current state: {}'.format(self.R[0, current_state]))
-
-                # Compute max reward for next state
                 max_accumulator = 0
                 for action in range(0, self.nActions):
-                    #print('Action {}'.format(action))
                     accumulator = 0
                     for target_state in range(0, self.nStates):
                         accumulator += (self.T[action, current_state, target_state] * self.R[action, target_state])
-                    max_accumulator = max(accumulator, 0)
-
-                #print('Max accumulator for this state: {}'.format(max_accumulator))
-
-                # Compute new reward for next state
-                new_reward = self.R[0, current_state] + (self.discount * max_accumulator)
+                    max_accumulator = max(accumulator, max_accumulator)
+                new_reward = self.R[action, current_state] + (self.discount * max_accumulator)
                 V[current_state] = new_reward
 
-                print(V)
-                print(Vbackup)
                 difference = np.abs(V[current_state]-Vbackup[current_state])
                 if difference > delta:
                     delta = difference
-                print('Delta: {}'.format(delta))
 
-            print(tolerance*(1 - self.discount)/self.discount)
-            if delta < tolerance*(1 - self.discount)/self.discount:
+            if delta < (tolerance*(1 - self.discount))/self.discount:
+                print('we will be breaking')
                 break
-            #break
-        return [V, iterId, epsilon]
+
+            if nIterations<iterId:
+                break
+
+            print([V, iterId, tolerance])
+
+        return [V, iterId, tolerance]
 
 
     def extractPolicy(self,V):
