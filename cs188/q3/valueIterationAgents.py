@@ -61,7 +61,7 @@ class ValueIterationAgent(ValueEstimationAgent):
 
 
     def runValueIteration(self):
-        for i in range(0, self.iterations):
+        for i in range(self.iterations):
             values = self.values.copy()
             for state in self.mdp.getStates():
                 allactionrewards = util.Counter()
