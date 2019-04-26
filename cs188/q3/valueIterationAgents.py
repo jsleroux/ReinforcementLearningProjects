@@ -35,8 +35,7 @@ class ValueIterationAgent(ValueEstimationAgent):
     """
         * Please read learningAgents.py before reading this.*
 
-        A ValueIterationAgent takes a Markov decision process
-        (see mdp.py) on initialization and runs value iteration
+        A ValueIterationAgent takes a Markov decision process        (see mdp.py) on initialization and runs value iteration
         for a given number of iterations using the supplied
         discount factor.
     """
@@ -149,7 +148,16 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        states = self.mdp.getStates()
+        index = 0
+        for i in range(self.iterations):
+            state = states[index % len(states)]
+            index += 1
+            allactionrewards = util.Counter()
+            for action in self.mdp.getPossibleActions(state):
+                allactionrewards[action] = self.computeQValueFromValues(state, action)
+            self.values[state] = allactionrewards[allactionrewards.argMax()]
+
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     """
@@ -169,5 +177,58 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        # Compute predecessors of all state
+        predecessors = {}
+        for state in self.mdp.getStates():
+            for action in self.mdp.getPossibleActions(state):
+                for (stateprime, prob) in self.mdp.getTransitionStatesAndProbs(state, action):
+                    if stateprime not in predecessors.keys():
+                        predecessors[stateprime] = set()
+                    predecessors[stateprime].add(state)
+
+        # Initialize an empty priority queue
+        queue = util.PriorityQueue()
+
+        for state in self.mdp.getStates():
+            # Find max absolute value
+            if self.mdp.isTerminal(state):
+                continue
+            current_state_value = self.values[state]
+            allactionrewards = util.Counter()
+            for action in self.mdp.getPossibleActions(state):
+                allactionrewards[action] = self.computeQValueFromValues(state, action)
+            max_state_value = allactionrewards[allactionrewards.argMax()]
+            diff = abs(current_state_value-max_state_value)
+
+            # Push s in priority queue
+            queue.push(state, diff*-1)
+
+        for i in range(self.iterations):
+            # If the priority queue is empty, then terminate
+            if queue.isEmpty():
+                break
+
+            # Pop a state s off the priority queue
+            state = queue.pop()
+
+            # If not terminal state, update s value
+            if not self.mdp.isTerminal(state):
+                allactionrewards = util.Counter()
+                for action in self.mdp.getPossibleActions(state):
+                    allactionrewards[action] = self.computeQValueFromValues(state, action)
+                self.values[state] = allactionrewards[allactionrewards.argMax()]
+
+            # For each predecessor p of s, do:
+            for p in predecessors[state]:
+                # Find max absolute value
+                current_state_value = self.values[p]
+                allactionrewards = util.Counter()
+                for action in self.mdp.getPossibleActions(p):
+                    allactionrewards[action] = self.computeQValueFromValues(p, action)
+                max_state_value = allactionrewards[allactionrewards.argMax()]
+                diff = abs(current_state_value-max_state_value)
+
+                # if diff > theta, push p into priority queue
+                if diff > self.theta:
+                    queue.update(p, diff*-1)
 
